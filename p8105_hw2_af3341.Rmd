@@ -1,0 +1,11 @@
+---
+title: "p8105_hw2_af3341"
+author: "Alana Ferris"
+date: "2022-09-29"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+```
+
