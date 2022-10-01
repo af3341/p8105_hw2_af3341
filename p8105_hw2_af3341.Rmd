@@ -16,12 +16,13 @@ library(dplyr)
 transit_df = read_csv("data/NYC_transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>% 
   select(line, station_name, station_latitude, station_longitude, route1:route11, entry, vending, entrance_type, ada) %>% 
-  mutate(entry = ifelse(entry == "YES", TRUE, FALSE))
+  mutate(entry = ifelse(entry == "YES", TRUE, FALSE)) %>%
+  mutate_at(c('route8', 'route9', 'route10', 'route11'), as.character)
 ```
 
 ## Dataset Description
 The NYC Transit dataset contains `r nrow(transit_df)` observations of individual New York City subway entrances and/or exits. The `r ncol(transit_df)` variables selected for include: the name of the transit line; the station name; the latitude and longitude of that station; the routes the line services; whether or not the station exits are also entrances; the type of entrance (stair, elevator, etc.); if it is an accessible entrance; and if there is a vending machine at that station.
-To clean the data, first we used the `clean_names` function from the  `janitor` package to make every variable name lowercase and snake_case. Then, we selected for the variables of interest, which are listed above. The resulting data set has the dimensions described above: 1868 rows and 19 columns. This data set is now tidy because all the columns are variables, all the rows are observations, and every value has a cell.
+To clean the data, first we used the `clean_names` function from the  `janitor` package to make every variable name lowercase and snake_case. Then, we selected for the variables of interest, which are listed above. Next, we mutated some of the route variables so they were all character variables. The resulting data set has the dimensions described above: 1,868 rows by 19 columns. However, this data set is not tidy because not all the columns are variables--`route_num` should be a variable. To tidy the data then, we would need to use `pivot_longer` to make `route_num` into a variable.
 
 ## How Many Distinct Stations? 
 
@@ -63,15 +64,18 @@ About 37.7% of stations that do not have vending machines also have entrances.
 ## Reformatting Data
 
 ```{r}
-line_route_df = transit_df %>% 
-  distinct(line, route1, route2, route3, route4, route5, route6, route7, route8, route9, route10, route11, .keep_all = TRUE)
+distinct_A_df = transit_df %>% 
+  pivot_longer(
+    route1:route11,
+    names_to = "route_num",
+    values_to = "route") %>% 
+  filter(route == "A") %>% 
+  select(station_name, line, ada) %>% 
+  distinct()
 
-A_train_df =  line_route_df %>%
-  filter(route1 == "A" | route2 == "A" | route3 == "A" | route4 == "A" | route5 == "A" | route6 == "A" | route7 == "A" | route8 == "A" | route9 == "A" | route10 == "A" | route11 == "A")
-
-ADA_A_df = A_train_df %>%
+ADA_A_df = distinct_A_df %>% 
   filter(ada == TRUE)
 ```
 
-There are 30 distinct stations that serve the A train, and of those there are 14 that are ADA compliant. 
+There are 60 distinct stations that serve the A train, and of those there are 17 that are ADA compliant. 
 
