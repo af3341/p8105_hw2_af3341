@@ -8,6 +8,7 @@ output: github_document
 ```{r, message = FALSE}
 library(tidyverse)
 library(dplyr)
+library(readxl)
 ```
 
 # Problem 1 
@@ -17,7 +18,7 @@ transit_df = read_csv("data/NYC_transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>% 
   select(line, station_name, station_latitude, station_longitude, route1:route11, entry, vending, entrance_type, ada) %>% 
   mutate(entry = ifelse(entry == "YES", TRUE, FALSE)) %>%
-  mutate_at(c('route8', 'route9', 'route10', 'route11'), as.character)
+  mutate_at(c("route8", "route9", "route10", "route11"), as.character)
 ```
 
 ## Dataset Description
@@ -78,4 +79,37 @@ ADA_A_df = distinct_A_df %>%
 ```
 
 There are 60 distinct stations that serve the A train, and of those there are 17 that are ADA compliant. 
+
+# Problem 2
+
+## mr_trash_wheel dataframe
+
+```{r, warning = FALSE}
+mr_trash_wheel = read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = "Mr. Trash Wheel", range = "A2:O535") %>% 
+  janitor::clean_names() %>% 
+  drop_na() %>% 
+  mutate_at(vars(sports_balls), funs(round(., 0))) %>% 
+  mutate_at(c("sports_balls"), as.integer) %>% 
+  mutate_at(c("dumpster"), as.double)
+```
+
+## prof_trash_wheel dataframe
+```{r}
+prof_trash_wheel = read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = "Professor Trash Wheel", range = "A2:O117") %>% 
+  janitor::clean_names() %>% 
+  drop_na() %>% 
+  mutate_at(vars(sports_balls), funs(round(., 0))) %>% 
+  mutate_at(c("sports_balls"), as.integer)
+```
+
+## Joining Data Sets
+
+```{r}
+both_trash_wheels = 
+  bind_rows(mr_trash_wheel, prof_trash_wheel)
+```
+
+## Dataset Description
+
+The `both_trash_wheels` dataset contains `r nrow(both_trash_wheels)` observations of dumpster fills of 2 different trash wheels: Mr. Trash Wheel and Professor Trash Wheel. The different dumpster metrics include `r ncol(both_trash_wheels)` variables, like: the name of the trash wheel; the weight and volume of trash collected; the number of dumpsters filled; the date the full dumpster was collected; the different types of trash collected; and the homes powered from the incineration of the dumpsters. For example, the total weight of trash collected by Professor Trashweel from January 2017 to January 2021 was `r sum(prof_trash_wheel$weight_tons)` tons. Additionally, the total number of sports balls collected by Mr. Trash Wheel in 2020 was `r aggregate(sports_balls ~ year, data = mr_trash_wheel, sum) %>% filter(year == 2020) %>% magrittr::extract2("sports_balls")` balls. 
 
