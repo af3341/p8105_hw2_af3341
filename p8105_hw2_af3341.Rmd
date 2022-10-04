@@ -123,8 +123,8 @@ pols_month_df = read_csv('data/pols-month.csv') %>%
   separate(mon, into = c("year", "month", "day"), convert = TRUE) %>% 
   mutate(month = recode(month, `1` = "jan", `2` = "feb", `3` = "mar", `4` = "apr", `5` = "may", `6` = "jun", `7` = "jul", `8` = "aug", `9` = "sep", `10` = "oct", `11` = "nov", `12` = "dec")) %>% 
   select(year, month, -day, prez_gop, prez_dem, gov_gop, gov_dem, sen_gop, sen_dem, rep_gop, rep_dem) %>% 
-  mutate(prez_gop = recode(prez_gop, `0` = "gop")) %>% 
-  mutate(prez_dem = recode(prez_dem, `1` = "dem")) %>% 
+  mutate(prez_gop = recode(prez_gop, `1` = "gop", `0` = "dem")) %>% 
+  mutate(prez_dem = recode(prez_dem, `1` = "dem", `0` = "gop")) %>% 
 pivot_longer(
     prez_gop:prez_dem,
     values_to = "president") %>% 
